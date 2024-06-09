@@ -1,0 +1,85 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+data = pd.read_csv ("gdp-per-capita-worldbank.csv")
+
+# Mostrar las primeras filas del dataframe para inspección
+data.head()
+
+data.shape
+
+data.info()
+
+# List of Latin American countries
+latin_american_countries = [
+    "Argentina", "Bolivia", "Brazil", "Chile", "Colombia", 
+    "Costa Rica", "Cuba", "Dominican Republic", "Ecuador", "El Salvador", 
+    "Guatemala", "Honduras", "Mexico", "Nicaragua", "Panama", 
+    "Paraguay", "Peru", "Puerto Rico", "Uruguay", "Venezuela"
+]
+
+# Filter data for Latin American countries
+latin_america_data = data[data['Entity'].isin(latin_american_countries)]
+
+# Display the first few rows of the filtered dataset to confirm
+latin_america_data.head()
+
+# Agrupar los datos por país y año, y calcular el PIB per cápita promedio
+latin_american_gdp = latin_america_data.groupby(['Entity', 'Year'])['GDP per capita, PPP (constant 2017 international $)'].mean().unstack()
+
+# Visualizar las tendencias del PIB per cápita
+latin_american_gdp.T.plot(figsize=(14, 8), title="Tendencias del PIB per cápita en Latinoamérica (2002-2022)")
+plt.xlabel("Año")
+plt.ylabel("PIB per cápita (PPP, $ constantes 2022)")
+plt.legend(title="País", bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.show()
+
+# Descripción estadística del PIB per cápita para los países de Latinoamérica
+latin_america_desc = latin_america_data.describe()
+
+# Mostrar la descripción estadística
+latin_america_desc
+
+import seaborn as sns
+
+# Evolución Temporal del PIB per cápita para cada país
+plt.figure(figsize=(14, 8))
+for country in latin_american_countries:
+    country_data = latin_america_data[latin_america_data['Entity'] == country]
+    plt.plot(country_data['Year'], country_data['GDP per capita, PPP (constant 2017 international $)'], label=country)
+
+plt.title('Evolución Temporal del PIB per cápita en Países Latinoamericanos')
+plt.xlabel('Año')
+plt.ylabel('PIB per cápita, PPP (constante 2017, $ internacional)')
+plt.legend()
+plt.show()
+
+# Diagrama de caja comparativo
+plt.figure(figsize=(14, 8))
+sns.boxplot(x='Entity', y='GDP per capita, PPP (constant 2017 international $)', data=latin_america_data)
+plt.title('Comparación del PIB per cápita entre Países Latinoamericanos')
+plt.xlabel('País')
+plt.ylabel('PIB per cápita, PPP (constante 2017, $ internacional)')
+plt.xticks(rotation=90)
+plt.show()
+
+# Histogramas de distribución del PIB per cápita
+
+plt.figure(figsize=(14, 8))
+sns.histplot(data=latin_america_data, x='GDP per capita, PPP (constant 2017 international $)', hue='Entity', kde=True, multiple='stack', palette='tab20', edgecolor=".3", linewidth=.5)
+plt.title('Distribución del PIB per cápita en Países Latinoamericanos')
+plt.xlabel('PIB per cápita, PPP (constante 2017, $ internacional)')
+plt.ylabel('Frecuencia')
+plt.legend(title='País', bbox_to_anchor=(1.05, 1), loc='upper left', ncol=1)
+plt.tight_layout()
+plt.show()
+
+# Calcular el promedio del PIB per cápita para cada país
+average_gdp_per_capita = latin_america_data.groupby('Entity')['GDP per capita, PPP (constant 2017 international $)'].mean()
+
+# Crear un ranking de países con mejor PIB per cápita
+ranking_gdp_per_capita = average_gdp_per_capita.sort_values(ascending=False).reset_index()
+ranking_gdp_per_capita.columns = ['Country', 'Average GDP per capita, PPP (constant 2017 international $)']
+
+# Mostrar el ranking
+ranking_gdp_per_capita
